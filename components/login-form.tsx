@@ -19,7 +19,7 @@ export function LoginForm({ demo }: { demo: boolean }) {
       const supabase = createClient();
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
       if (authError) throw authError;
-      router.replace("/"); router.refresh();
+      router.push("/dashboard"); router.refresh();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Accesso non riuscito."); }
     finally { setLoading(false); }
   }
@@ -31,6 +31,6 @@ export function LoginForm({ demo }: { demo: boolean }) {
     <div><label className="mb-1.5 block text-sm font-bold" htmlFor="password">Password</label><input className="field" id="password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} /></div>
     {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
     <button className="button-primary w-full" disabled={loading} type="submit">{loading ? "Accesso…" : "Accedi"}</button>
-    <p className="text-center text-xs leading-5 text-[#89928d]">Gli accessi alle strutture vengono creati dal centro clienti Rece.</p>
+    <p className="text-center text-xs leading-5 text-[#89928d]">Gli account vengono creati dal backoffice della struttura.</p>
   </form>;
 }

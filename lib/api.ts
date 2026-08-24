@@ -5,15 +5,12 @@ export function apiError(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
 }
 
-export async function getApiContext(options?: { platformAdmin?: boolean }) {
+export async function getApiContext(options?: { admin?: boolean }) {
   const context = await getCurrentContext();
   if (!context) return { context: null, error: apiError("Non autenticato.", 401) };
   if (!context.profile.active) return { context: null, error: apiError("Account disattivato.", 403) };
-  if (options?.platformAdmin) {
-    if (context.profile.role !== "platform_admin") return { context: null, error: apiError("Permessi insufficienti.", 403) };
-    return { context, error: null };
-  }
-  if (context.profile.role !== "hotel_user" || !context.hotel) return { context: null, error: apiError("Accesso riservato alla struttura.", 403) };
+  if (options?.admin && context.profile.role !== "admin") return { context: null, error: apiError("Permessi insufficienti.", 403) };
+  if (!context.hotel && !options?.admin) return { context: null, error: apiError("Nessuna struttura associata.", 403) };
   return { context, error: null };
 }
 

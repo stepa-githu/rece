@@ -1,4 +1,4 @@
-export type AppRole = "platform_admin" | "hotel_user";
+export type AppRole = "admin" | "hotel_user";
 export type ReviewProvider = "google" | "booking" | "tripadvisor" | "manual";
 export type IntegrationStatus =
   | "disconnected"
@@ -31,11 +31,6 @@ export interface AppContext {
   profile: Profile;
   hotel: Hotel | null;
   demo: boolean;
-}
-
-export interface HotelAppContext extends AppContext {
-  profile: Profile & { role: "hotel_user"; hotel_id: string };
-  hotel: Hotel;
 }
 
 export interface ReviewDraft {

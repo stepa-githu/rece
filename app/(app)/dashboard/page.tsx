@@ -2,13 +2,13 @@ import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { ReviewRow } from "@/components/review-row";
 import { PageHeader, StatCard } from "@/components/ui";
-import { requireHotelContext } from "@/lib/auth";
+import { requireContext } from "@/lib/auth";
 import { getDashboardData, getIntegrations } from "@/lib/data";
 
 export const metadata = { title: "Panoramica" };
 
 export default async function DashboardPage() {
-  const context = await requireHotelContext(); const hotelId = context.hotel.id;
+  const context = await requireContext(); const hotelId = context.hotel?.id; if (!hotelId) return null;
   const [{ reviews, stats }, integrations] = await Promise.all([getDashboardData(hotelId), getIntegrations(hotelId)]);
   const activeProviders = integrations.filter((item) => item.status === "connected").length;
   return <div className="space-y-7">
