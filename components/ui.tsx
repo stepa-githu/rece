@@ -7,7 +7,7 @@ export function Logo({ compact = false, inverse = false }: { compact?: boolean; 
 }
 
 const providers: Record<ReviewProvider, { label: string; letter: string; classes: string }> = {
-  google: { label: "Google", letter: "G", classes: "bg-blue-50 text-blue-700" }, booking: { label: "Booking.com", letter: "B", classes: "bg-indigo-50 text-indigo-700" }, tripadvisor: { label: "Tripadvisor", letter: "T", classes: "bg-emerald-50 text-emerald-700" }, manual: { label: "Importata", letter: "I", classes: "bg-stone-100 text-stone-700" },
+  google: { label: "Google", letter: "G", classes: "bg-blue-50 text-blue-700" }, booking: { label: "Booking.com", letter: "B", classes: "bg-indigo-50 text-indigo-700" }, tripadvisor: { label: "Tripadvisor", letter: "T", classes: "bg-emerald-50 text-emerald-700" }, manual: { label: "Manuale", letter: "M", classes: "bg-stone-100 text-stone-700" },
 };
 
 export function ProviderBadge({ provider }: { provider: ReviewProvider }) {

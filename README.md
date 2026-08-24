@@ -10,6 +10,7 @@ Dominio previsto: `https://rece.marketingterritoriale.it`
 - isolamento dei dati per hotel con Row Level Security;
 - backoffice amministratore per creare hotel e invitare utenti;
 - dashboard responsive e archivio recensioni filtrabile;
+- inserimento manuale delle recensioni con indicazione del canale originale;
 - dettaglio recensione con generazione, modifica e copia della risposta;
 - conoscenza AI alimentata dal sito ufficiale, note e file testuali;
 - tono di voce configurabile;
@@ -117,6 +118,12 @@ Il file `vercel.json` esegue la sincronizzazione ogni 6 ore. Vercel invia automa
 4. Dopo la conferma accedi da `/login`.
 
 La procedura viene bloccata appena esiste il primo profilo. Gli utenti successivi si invitano da **Backoffice → Hotel e utenti**.
+
+### Inserire recensioni senza collegare API
+
+Apri **Recensioni → Aggiungi recensione**. La fonte viene salvata come `Manuale`, mentre il campo **Canale originale** conserva la piattaforma in cui la recensione è presente, per esempio Google, Booking.com, Tripadvisor o Airbnb. Il link originale è facoltativo.
+
+Per un database già configurato, esegui prima `supabase/migrations/0003_manual_reviews.sql` nel SQL Editor di Supabase. Le recensioni manuali seguono poi lo stesso flusso delle recensioni importate: elenco, filtri, dettaglio e generazione della risposta AI.
 
 ## 7. Configura Google Business Profile
 

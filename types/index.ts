@@ -47,6 +47,7 @@ export interface Review {
   id: string;
   hotel_id: string;
   provider: ReviewProvider;
+  original_channel: string | null;
   external_id: string;
   author_name: string | null;
   author_country: string | null;

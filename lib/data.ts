@@ -70,7 +70,7 @@ export async function getReviews(
     const safeQuery = options.q.replace(/[,%()]/g, " ").trim();
     if (safeQuery) {
       request = request.or(
-        `author_name.ilike.%${safeQuery}%,title.ilike.%${safeQuery}%,body.ilike.%${safeQuery}%`,
+        `author_name.ilike.%${safeQuery}%,title.ilike.%${safeQuery}%,body.ilike.%${safeQuery}%,original_channel.ilike.%${safeQuery}%`,
       );
     }
   }

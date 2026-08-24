@@ -53,6 +53,7 @@ create table if not exists public.reviews (
   id uuid primary key default gen_random_uuid(),
   hotel_id uuid not null references public.hotels(id) on delete cascade,
   provider text not null check (provider in ('google', 'booking', 'tripadvisor', 'manual')),
+  original_channel text,
   external_id text not null,
   author_name text,
   author_country text,
@@ -70,7 +71,10 @@ create table if not exists public.reviews (
   raw_payload jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (hotel_id, provider, external_id)
+  unique (hotel_id, provider, external_id),
+  constraint reviews_manual_channel_check check (
+    provider <> 'manual' or nullif(trim(original_channel), '') is not null
+  )
 );
 
 create index if not exists reviews_hotel_date_idx
