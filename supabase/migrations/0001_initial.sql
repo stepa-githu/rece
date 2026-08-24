@@ -20,7 +20,7 @@ create table if not exists public.profiles (
   hotel_id uuid references public.hotels(id) on delete set null,
   full_name text not null default '',
   email text not null,
-  role text not null default 'hotel_user' check (role in ('admin', 'hotel_user')),
+  role text not null default 'hotel_user' check (role in ('platform_admin', 'hotel_user')),
   active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -184,10 +184,16 @@ begin
   insert into public.profiles (id, hotel_id, full_name, email, role)
   values (
     new.id,
-    nullif(new.raw_user_meta_data->>'hotel_id', '')::uuid,
+    case
+      when new.raw_user_meta_data->>'role' = 'platform_admin' then null
+      else nullif(new.raw_user_meta_data->>'hotel_id', '')::uuid
+    end,
     coalesce(new.raw_user_meta_data->>'full_name', ''),
     coalesce(new.email, ''),
-    case when new.raw_user_meta_data->>'role' = 'admin' then 'admin' else 'hotel_user' end
+    case
+      when new.raw_user_meta_data->>'role' = 'platform_admin' then 'platform_admin'
+      else 'hotel_user'
+    end
   )
   on conflict (id) do nothing;
   return new;
@@ -205,7 +211,9 @@ language sql
 stable
 security definer set search_path = public
 as $$
-  select hotel_id from public.profiles where id = auth.uid() and active = true;
+  select hotel_id
+  from public.profiles
+  where id = auth.uid() and role = 'hotel_user' and active = true;
 $$;
 
 create or replace function public.is_platform_admin()
@@ -216,7 +224,10 @@ security definer set search_path = public
 as $$
   select exists (
     select 1 from public.profiles
-    where id = auth.uid() and role = 'admin' and active = true
+    where id = auth.uid()
+      and role = 'platform_admin'
+      and hotel_id is null
+      and active = true
   );
 $$;
 
@@ -232,26 +243,25 @@ alter table public.sync_runs enable row level security;
 
 create policy "hotel visible to members" on public.hotels for select
 using (id = public.current_hotel_id() or public.is_platform_admin());
-create policy "admins manage hotels" on public.hotels for all
-using (public.is_platform_admin()) with check (public.is_platform_admin());
 
 create policy "profiles visible to self or admin" on public.profiles for select
-using (id = auth.uid() or public.is_platform_admin());
-create policy "admins manage profiles" on public.profiles for all
-using (public.is_platform_admin()) with check (public.is_platform_admin());
+using (
+  id = auth.uid()
+  or (public.is_platform_admin() and role = 'hotel_user')
+);
 
 create policy "members read integrations" on public.integrations for select
-using (hotel_id = public.current_hotel_id() or public.is_platform_admin());
+using (hotel_id = public.current_hotel_id());
 create policy "members read reviews" on public.reviews for select
-using (hotel_id = public.current_hotel_id() or public.is_platform_admin());
+using (hotel_id = public.current_hotel_id());
 create policy "members read drafts" on public.review_drafts for select
-using (hotel_id = public.current_hotel_id() or public.is_platform_admin());
+using (hotel_id = public.current_hotel_id());
 create policy "members read knowledge" on public.knowledge_sources for select
-using (hotel_id = public.current_hotel_id() or public.is_platform_admin());
+using (hotel_id = public.current_hotel_id());
 create policy "members read tone" on public.tone_profiles for select
-using (hotel_id = public.current_hotel_id() or public.is_platform_admin());
+using (hotel_id = public.current_hotel_id());
 create policy "members read sync runs" on public.sync_runs for select
-using (hotel_id = public.current_hotel_id() or public.is_platform_admin());
+using (hotel_id = public.current_hotel_id());
 
 insert into storage.buckets (id, name, public)
 values ('knowledge-files', 'knowledge-files', false)
@@ -261,8 +271,5 @@ create policy "server manages knowledge files"
 on storage.objects for select
 using (
   bucket_id = 'knowledge-files'
-  and (
-    split_part(name, '/', 1) = public.current_hotel_id()::text
-    or public.is_platform_admin()
-  )
+  and split_part(name, '/', 1) = public.current_hotel_id()::text
 );

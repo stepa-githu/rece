@@ -24,7 +24,7 @@ export const demoContext: AppContext = {
     hotel_id: demoHotel.id,
     full_name: "Stefano",
     email: "demo@rece.local",
-    role: "admin",
+    role: "hotel_user",
     active: true,
   },
   hotel: demoHotel,

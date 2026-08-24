@@ -2,13 +2,18 @@
 
 MVP multi-hotel per raccogliere recensioni, organizzarle in un unico pannello e preparare risposte AI coerenti con sito ufficiale, materiali della struttura e tono di voce.
 
+L’app separa nettamente due aree:
+
+- **Centro clienti Rece**: l’amministratore centrale può soltanto vedere le strutture e crearne di nuove insieme al primo referente;
+- **Pannello hotel**: ogni referente vede e gestisce esclusivamente la propria struttura.
+
 Dominio previsto: `https://rece.marketingterritoriale.it`
 
 ## Cosa contiene questa versione
 
 - login email/password con Supabase Auth;
 - isolamento dei dati per hotel con Row Level Security;
-- backoffice amministratore per creare hotel e invitare utenti;
+- centro clienti separato per creare hotel e inviare il primo accesso;
 - dashboard responsive e archivio recensioni filtrabile;
 - dettaglio recensione con generazione, modifica e copia della risposta;
 - conoscenza AI alimentata dal sito ufficiale, note e file testuali;
@@ -33,15 +38,16 @@ La risposta AI non viene mai pubblicata automaticamente. L’operatore la contro
 
 1. Apri [Supabase](https://supabase.com/dashboard) e crea un progetto.
 2. Entra in **SQL Editor**.
-3. Copia tutto il contenuto di `supabase/migrations/0001_initial.sql`.
-4. Incollalo nell’editor e premi **Run**.
+3. Se il database è nuovo, esegui `supabase/migrations/0001_initial.sql`.
+4. Esegui anche `supabase/migrations/0002_role_separation.sql` (è sicuro anche su una nuova installazione).
 5. In **Project Settings → API** recupera:
-   - Project URL: https://wlywvwakuzrezfjmtste.supabase.co/rest/v1/
-   - Publishable key: sb_publishable_O98RiW6jFc5X4tzgqbmNTA_ZLhXqdKy
-   - Service role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndseXd2d2FrdXpyZXpmam10c3RlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzU0ODU2NiwiZXhwIjoyMTAzMTI0NTY2fQ.qUgNP7D8Kw3AWNmEGAV6QaqLaYktmX_e2-XNWDE3CV4
+   - Project URL;
+   - Publishable key;
+   - Service role key.
 
+Gli script creano tabelle, indici, trigger utente, policy RLS e bucket privato `knowledge-files`.
 
-Lo script crea tabelle, indici, trigger utente, policy RLS e bucket privato `knowledge-files`.
+Se avevi già eseguito la precedente versione di `0001_initial.sql`, **non eseguirla di nuovo**: esegui soltanto `0002_role_separation.sql`.
 
 ## 2. Prepara il progetto in locale
 
@@ -49,8 +55,19 @@ Requisiti: Node.js 22 o successivo e Git.
 
 ```bash
 npm install
-cp .env.example .env.local
 npm run dev:vercel
+```
+
+Su Windows PowerShell crea prima il file delle variabili con:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+Su macOS o Linux usa invece:
+
+```bash
+cp .env.example .env.local
 ```
 
 Compila `.env.local` con i valori descritti nella sezione seguente. L’app parte anche senza chiavi, mostrando la demo.
@@ -62,7 +79,7 @@ Compila `.env.local` con i valori descritti nella sezione seguente. L’app part
 | `NEXT_PUBLIC_APP_URL` | sì | `https://rece.marketingterritoriale.it` |
 | `NEXT_PUBLIC_SUPABASE_URL` | sì | URL del progetto Supabase |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | sì | Publishable key Supabase |
-| `SUPABASE_SERVICE_ROLE_KEY` | sì | Service role key; solo server |
+| `SUPABASE_SERVICE_ROLE_KEY` | sì | Secret key Supabase (`sb_secret_...`) oppure la precedente service role key; solo server |
 | `TOKEN_ENCRYPTION_KEY` | sì | frase casuale lunga almeno 32 caratteri |
 | `SETUP_TOKEN` | sì | codice segreto usato una volta su `/setup` |
 | `CRON_SECRET` | sì | segreto casuale per il cron Vercel |
@@ -110,14 +127,25 @@ Il file `vercel.json` esegue la sincronizzazione ogni 6 ore. Vercel invia automa
 3. Nel DNS di `marketingterritoriale.it` crea il record indicato da Vercel, normalmente un CNAME `rece` verso `cname.vercel-dns.com`.
 4. Imposta anche `NEXT_PUBLIC_APP_URL=https://rece.marketingterritoriale.it` e ridistribuisci.
 
-## 6. Crea il primo hotel e il primo admin
+## 6. Crea il centro clienti e gli accessi hotel
 
 1. Apri `https://rece.marketingterritoriale.it/setup`.
 2. Inserisci il valore configurato in `SETUP_TOKEN`.
-3. Compila hotel, sito, nome, email e password.
-4. Dopo la conferma accedi da `/login`.
+3. Inserisci nome, email e password dell’amministratore centrale Rece.
+4. Dopo la conferma accedi da `/login`: verrai portato al centro clienti.
+5. Inserisci struttura, sito ufficiale, nome ed email del referente.
+6. L’app crea l’hotel e invia al referente un link per scegliere la password.
 
-La procedura viene bloccata appena esiste il primo profilo. Gli utenti successivi si invitano da **Backoffice → Hotel e utenti**.
+La procedura `/setup` viene bloccata appena esiste il primo profilo. Ogni referente creato dal centro clienti ha il ruolo `hotel_user` e un singolo `hotel_id`.
+
+In **Supabase → Authentication → URL Configuration** aggiungi tra gli URL di reindirizzamento consentiti:
+
+```text
+http://localhost:3000/set-password
+https://rece.marketingterritoriale.it/set-password
+```
+
+Per l’uso reale configura inoltre un SMTP personalizzato in Supabase, così gli inviti non dipendono dai limiti del servizio email di prova.
 
 ## 7. Configura Google Business Profile
 
@@ -190,7 +218,7 @@ Il crawler visita al massimo 8 pagine dello stesso dominio, blocca indirizzi loc
 - inserisci log di audit, rate limiting e monitoraggio prima di una vendita su larga scala;
 - informa l’operatore che la risposta AI va sempre verificata.
 
-Il progetto protegge le righe per hotel tramite RLS. Le mutazioni privilegiate avvengono solo nelle route server dopo il controllo della sessione e del ruolo.
+Il progetto protegge le righe per hotel tramite RLS. Il ruolo `platform_admin` può leggere soltanto elenco strutture e referenti: non può leggere recensioni, bozze, fonti AI, tono, integrazioni, sincronizzazioni o file degli hotel. Le mutazioni privilegiate avvengono solo nelle route server dopo il controllo della sessione e del ruolo.
 
 ## Struttura cartelle
 
@@ -200,6 +228,7 @@ app/
   api/                   endpoint server
   auth/                  callback e logout
   login/ setup/          accesso e prima configurazione
+  set-password/          scelta password dopo l’invito
 components/              interfaccia riusabile
 lib/
   providers/             adapter Google, Booking.com, Tripadvisor
@@ -223,6 +252,8 @@ Verifica inoltre:
 
 - login e logout;
 - impossibilità per un utente hotel di aprire `/admin`;
+- impossibilità per l’amministratore centrale di aprire pagine e API operative;
+- impossibilità per un hotel di leggere dati con un `hotel_id` diverso dal proprio;
 - scelta corretta della sede Google;
 - sincronizzazione delle tre fonti autorizzate;
 - risposta nella lingua della recensione;
@@ -248,5 +279,3 @@ Verifica inoltre:
 - [Booking.com Guest Review API](https://developers.booking.com/connectivity/docs/review-api)
 - [Tripadvisor Terra](https://docs.terra.tripadvisor.com/docs/overview)
 - [OpenAI Responses API](https://developers.openai.com/api/reference/resources/responses/methods/create)
-#   r e c e  
- 

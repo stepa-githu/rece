@@ -3,13 +3,13 @@ import { notFound } from "next/navigation";
 import { DraftEditor } from "@/components/draft-editor";
 import { Icon } from "@/components/icons";
 import { ProviderBadge, Rating, StatusBadge } from "@/components/ui";
-import { requireContext } from "@/lib/auth";
+import { requireHotelContext } from "@/lib/auth";
 import { getReview } from "@/lib/data";
 
 export const metadata = { title: "Dettaglio recensione" };
 
 export default async function ReviewDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const context = await requireContext(); const { id } = await params; if (!context.hotel) notFound();
+  const context = await requireHotelContext(); const { id } = await params;
   const review = await getReview(context.hotel.id, id); if (!review) notFound();
   return <div className="space-y-5"><Link className="inline-flex items-center gap-1.5 text-sm font-bold text-[#68746e] hover:text-[#d65f49]" href="/reviews"><Icon className="rotate-180" name="arrow" size={17} /> Torna alle recensioni</Link>
     <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(380px,.8fr)]">

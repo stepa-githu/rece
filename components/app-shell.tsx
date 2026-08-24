@@ -16,6 +16,10 @@ const mainNav: Array<{ href: string; label: string; icon: IconName }> = [
   { href: "/settings", label: "Struttura", icon: "settings" },
 ];
 
+const adminNav: Array<{ href: string; label: string; icon: IconName }> = [
+  { href: "/admin", label: "Strutture clienti", icon: "hotel" },
+];
+
 function NavItem({ href, label, icon, onClick }: { href: string; label: string; icon: IconName; onClick?: () => void }) {
   const pathname = usePathname();
   const active = pathname === href || pathname.startsWith(`${href}/`);
@@ -23,11 +27,13 @@ function NavItem({ href, label, icon, onClick }: { href: string; label: string; 
 }
 
 function SidebarContent({ context, close }: { context: AppContext; close?: () => void }) {
+  const isPlatformAdmin = context.profile.role === "platform_admin";
+  const navigation = isPlatformAdmin ? adminNav : mainNav;
   return <>
     <div className="px-3 pt-2"><Logo /></div>
-    <div className="mt-6 rounded-2xl border border-[#e7e7df] bg-white p-3.5"><div className="flex items-center gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eaf5f0] font-black text-[#2f7a64]">{(context.hotel?.name ?? "R").slice(0, 1).toUpperCase()}</span><div className="min-w-0"><p className="truncate text-sm font-extrabold text-[#17211d]">{context.hotel?.name ?? "Amministrazione Rece"}</p><p className="truncate text-xs text-[#89928d]">{context.user.email}</p></div></div></div>
-    <nav className="mt-5 space-y-1" aria-label="Navigazione principale">{mainNav.map((item) => <NavItem key={item.href} {...item} onClick={close} />)}</nav>
-    {context.profile.role === "admin" && <div className="mt-6 border-t border-[#e7e7df] pt-5"><p className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.16em] text-[#a0a7a3]">Backoffice</p><NavItem href="/admin" label="Hotel e utenti" icon="users" onClick={close} /></div>}
+    <div className="mt-6 rounded-2xl border border-[#e7e7df] bg-white p-3.5"><div className="flex items-center gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eaf5f0] font-black text-[#2f7a64]">{(isPlatformAdmin ? "R" : context.hotel?.name ?? "H").slice(0, 1).toUpperCase()}</span><div className="min-w-0"><p className="truncate text-sm font-extrabold text-[#17211d]">{isPlatformAdmin ? "Centro clienti Rece" : context.hotel?.name ?? "Struttura"}</p><p className="truncate text-xs text-[#89928d]">{context.user.email}</p></div></div></div>
+    {isPlatformAdmin && <p className="mb-2 mt-6 px-3 text-[10px] font-black uppercase tracking-[0.16em] text-[#a0a7a3]">Amministrazione</p>}
+    <nav className={`${isPlatformAdmin ? "mt-0" : "mt-5"} space-y-1`} aria-label="Navigazione principale">{navigation.map((item) => <NavItem key={item.href} {...item} onClick={close} />)}</nav>
     <div className="mt-auto pt-6"><a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#7b8580] hover:bg-[#f2f2ed]" href="/auth/signout"><Icon name="logout" size={18} /> Esci</a></div>
   </>;
 }

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { demoContext } from "@/lib/demo-data";
 import { isDemoMode } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import type { AppContext } from "@/types";
+import type { AppContext, HotelAppContext } from "@/types";
 
 export async function getCurrentContext(): Promise<AppContext | null> {
   if (isDemoMode) return demoContext;
@@ -48,8 +48,15 @@ export async function requireContext() {
   return context;
 }
 
-export async function requireAdmin() {
+export async function requireHotelContext(): Promise<HotelAppContext> {
   const context = await requireContext();
-  if (context.profile.role !== "admin") redirect("/dashboard");
+  if (context.profile.role === "platform_admin") redirect("/admin");
+  if (!context.hotel || !context.profile.hotel_id) redirect("/login?error=no-hotel");
+  return context as HotelAppContext;
+}
+
+export async function requirePlatformAdmin() {
+  const context = await requireContext();
+  if (context.profile.role !== "platform_admin") redirect("/dashboard");
   return context;
 }
