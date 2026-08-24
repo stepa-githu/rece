@@ -119,6 +119,12 @@ Il file `vercel.json` esegue la sincronizzazione ogni 6 ore. Vercel invia automa
 
 La procedura viene bloccata appena esiste il primo profilo. Gli utenti successivi si invitano da **Backoffice → Hotel e utenti**.
 
+### Creare gli accessi degli utenti
+
+Dal backoffice crea prima la struttura, poi usa **Crea un accesso** indicando email, password iniziale, struttura e ruolo. La password viene affidata direttamente a Supabase Auth e non viene mai salvata nella tabella `profiles` o resa nuovamente visibile nell’app.
+
+Se inserisci un’email già presente, lo stesso modulo aggiorna la password e l’associazione alla struttura. Comunica la password iniziale all’utente tramite un canale riservato.
+
 ### Inserire recensioni senza collegare API
 
 Apri **Recensioni → Aggiungi recensione**. La fonte viene salvata come `Manuale`, mentre il campo **Canale originale** conserva la piattaforma in cui la recensione è presente, per esempio Google, Booking.com, Tripadvisor o Airbnb. Il link originale è facoltativo.
