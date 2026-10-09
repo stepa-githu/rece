@@ -2,7 +2,7 @@
 
 MVP multi-hotel per raccogliere recensioni, organizzarle in un unico pannello e preparare risposte AI coerenti con sito ufficiale, materiali della struttura e tono di voce.
 
-Dominio previsto: `https://rece.marketingterritoriale.it`
+Dominio previsto: `https://rece.marketingterritoriale.com`
 
 ## Cosa contiene questa versione
 
@@ -59,7 +59,7 @@ Compila `.env.local` con i valori descritti nella sezione seguente. L’app part
 
 | Variabile | Obbligatoria | Dove trovarla / cosa inserire |
 | --- | --- | --- |
-| `NEXT_PUBLIC_APP_URL` | sì | `https://rece.marketingterritoriale.it` |
+| `NEXT_PUBLIC_APP_URL` | sì | `https://rece.marketingterritoriale.com` |
 | `NEXT_PUBLIC_SUPABASE_URL` | sì | URL del progetto Supabase |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | sì | Publishable key Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | sì | Service role key; solo server |
@@ -106,13 +106,13 @@ Il file `vercel.json` esegue la sincronizzazione ogni 6 ore. Vercel invia automa
 ## 5. Collega il dominio
 
 1. In Vercel apri **Settings → Domains**.
-2. Aggiungi `rece.marketingterritoriale.it`.
-3. Nel DNS di `marketingterritoriale.it` crea il record indicato da Vercel, normalmente un CNAME `rece` verso `cname.vercel-dns.com`.
-4. Imposta anche `NEXT_PUBLIC_APP_URL=https://rece.marketingterritoriale.it` e ridistribuisci.
+2. Aggiungi `rece.marketingterritoriale.com`.
+3. Nel DNS di `marketingterritoriale.com` crea il record indicato da Vercel, normalmente un CNAME `rece` verso `cname.vercel-dns.com`.
+4. Imposta anche `NEXT_PUBLIC_APP_URL=https://rece.marketingterritoriale.com` e ridistribuisci.
 
 ## 6. Crea il primo hotel e il primo admin
 
-1. Apri `https://rece.marketingterritoriale.it/setup`.
+1. Apri `https://rece.marketingterritoriale.com/setup`.
 2. Inserisci il valore configurato in `SETUP_TOKEN`.
 3. Compila hotel, sito, nome, email e password.
 4. Dopo la conferma accedi da `/login`.
@@ -142,7 +142,7 @@ Nel progetto Google Cloud:
 5. aggiungi come redirect URI autorizzato:
 
 ```text
-https://rece.marketingterritoriale.it/api/integrations/google/callback
+https://rece.marketingterritoriale.com/api/integrations/google/callback
 ```
 
 6. copia Client ID e Client Secret in Vercel;

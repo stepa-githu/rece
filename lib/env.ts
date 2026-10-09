@@ -1,6 +1,6 @@
 export const appUrl =
   process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
-  "https://rece.marketingterritoriale.it";
+  "https://rece.marketingterritoriale.com";
 
 export const isSupabaseConfigured = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL &&
